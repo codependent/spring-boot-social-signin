@@ -3,8 +3,8 @@ spring:
     cache: false
 
 facebook:
-  clientId: asdf
-  clientSecret: asdf
+  clientId: 568259723364175
+  clientSecret: 8fa26e8b1cf1374cf030a80ca2c568b2
 
 logging:
   level:
