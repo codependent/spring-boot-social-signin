@@ -1,0 +1,11 @@
+spring:
+  thymeleaf:
+    cache: false
+
+facebook:
+  clientId: asdf
+  clientSecret: asdf
+
+logging:
+  level:
+    org.springframework.security: DEBUG
