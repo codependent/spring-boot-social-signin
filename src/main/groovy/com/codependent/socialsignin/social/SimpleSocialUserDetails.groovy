@@ -7,7 +7,7 @@ class SimpleSocialUserDetails implements SocialUserDetails{
 
 	@Override
 	public String getUserId(){
-		return "";
+		return "jinga4x";
 	}
 
 	@Override

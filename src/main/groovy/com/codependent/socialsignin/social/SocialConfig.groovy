@@ -1,7 +1,5 @@
 package com.codependent.socialsignin.social
 
-import static org.springframework.http.HttpMethod.GET
-
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Scope
@@ -11,7 +9,11 @@ import org.springframework.social.config.annotation.ConnectionFactoryConfigurer
 import org.springframework.social.config.annotation.EnableSocial
 import org.springframework.social.config.annotation.SocialConfigurerAdapter
 import org.springframework.social.connect.Connection
+import org.springframework.social.connect.ConnectionFactoryLocator
 import org.springframework.social.connect.ConnectionRepository
+import org.springframework.social.connect.ConnectionSignUp
+import org.springframework.social.connect.UsersConnectionRepository
+import org.springframework.social.connect.mem.InMemoryUsersConnectionRepository
 import org.springframework.social.facebook.api.Facebook
 import org.springframework.social.facebook.connect.FacebookConnectionFactory
 
@@ -29,6 +31,18 @@ class SocialConfig extends SocialConfigurerAdapter{
 	public Facebook facebook(ConnectionRepository repository) {
 		Connection<Facebook> connection = repository.findPrimaryConnection(Facebook.class);
 		return connection != null ? connection.getApi() : null;
+	}
+	
+	@Override
+	public UsersConnectionRepository getUsersConnectionRepository(ConnectionFactoryLocator connectionFactoryLocator) {
+		//return new JdbcUsersConnectionRepository(dataSource, connectionFactoryLocator, Encryptors.noOpText());
+		InMemoryUsersConnectionRepository rep = new InMemoryUsersConnectionRepository(connectionFactoryLocator)
+		rep.setConnectionSignUp(new ConnectionSignUp(){
+			public String execute(Connection<?> connection){
+				return "jinga4x"
+			}
+		})
+		return rep;
 	}
 	
 	/*

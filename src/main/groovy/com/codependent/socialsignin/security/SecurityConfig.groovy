@@ -35,15 +35,9 @@ class SecurityConfig extends WebSecurityConfigurerAdapter{
 				.logoutUrl("/logout")
 				.deleteCookies("JSESSIONID")
 				.and()
-			.rememberMe()
-				.and()
+			/*.rememberMe()
+				.and()*/
 			.apply(new SpringSocialConfigurer());
-	}
-	
-	@Bean
-	@Scope(value="singleton", proxyMode=ScopedProxyMode.INTERFACES)
-	public UsersConnectionRepository usersConnectionRepository(ConnectionFactoryLocator connectionFactoryLocator) {
-		return new InMemoryUsersConnectionRepository(connectionFactoryLocator)
 	}
 	
 	@Bean
