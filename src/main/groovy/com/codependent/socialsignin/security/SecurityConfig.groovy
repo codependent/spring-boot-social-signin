@@ -11,11 +11,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.social.connect.ConnectionFactoryLocator
 import org.springframework.social.connect.UsersConnectionRepository
 import org.springframework.social.connect.mem.InMemoryUsersConnectionRepository
+import org.springframework.social.security.SocialUser;
 import org.springframework.social.security.SocialUserDetails
 import org.springframework.social.security.SocialUserDetailsService
 import org.springframework.social.security.SpringSocialConfigurer
-
-import com.codependent.socialsignin.social.SimpleSocialUserDetails
 
 @EnableWebSecurity
 class SecurityConfig extends WebSecurityConfigurerAdapter{
@@ -51,7 +50,7 @@ class SecurityConfig extends WebSecurityConfigurerAdapter{
 		return new SocialUserDetailsService(){
 			@Override
 			public SocialUserDetails loadUserByUserId(String userId) throws UsernameNotFoundException{
-				return new SimpleSocialUserDetails(userId)
+				new SocialUser(userId, "HIDDEN", [])
 			}
 		}
 	}

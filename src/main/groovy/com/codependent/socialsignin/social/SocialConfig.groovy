@@ -19,6 +19,7 @@ import org.springframework.social.facebook.api.Facebook
 import org.springframework.social.facebook.api.User
 import org.springframework.social.facebook.connect.FacebookConnectionFactory
 import org.springframework.social.google.api.Google
+import org.springframework.social.google.api.plus.Person
 import org.springframework.social.google.connect.GoogleConnectionFactory
 import org.springframework.social.security.AuthenticationNameUserIdSource
 
@@ -56,7 +57,7 @@ class SocialConfig extends SocialConfigurerAdapter{
 		//return new JdbcUsersConnectionRepository(dataSource, connectionFactoryLocator, Encryptors.noOpText())
 		InMemoryUsersConnectionRepository rep = new InMemoryUsersConnectionRepository(connectionFactoryLocator)
 		rep.connectionSignUp = new ConnectionSignUp(){
-			public String execute(Connection<?> connection){
+			String execute(Connection<?> connection){
 				if(connection.api instanceof Facebook){
 					Facebook facebook = (Facebook)connection.api
 					String [] fields = [ "id", "email",  "first_name", "last_name", "about" , "gender" ]
@@ -64,14 +65,14 @@ class SocialConfig extends SocialConfigurerAdapter{
 					return userProfile.email
 				}else if(connection.api instanceof Google){
 					Google google = (Google)connection.api
-					Set<String> mails = google.plusOperations().googleProfile.emailAddresses
-					return mails.iterator().next()
+					Person userProfile = google.plusOperations().googleProfile
+					return userProfile.emailAddresses.iterator().next()
 				}else{
 					throw new UnsupportedOperationException("connection no soportado: " + connection)
 				}
 			}
 		}
-		return rep
+		rep
 	}
 	
 	@Override
