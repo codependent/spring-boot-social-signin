@@ -1,13 +1,20 @@
 package com.codependent.socialsignin.social
 
+import org.springframework.aop.aspectj.RuntimeTestWalker.ThisInstanceOfResidueTestVisitor;
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.social.security.SocialUserDetails
 
 class SimpleSocialUserDetails implements SocialUserDetails{
 
+	private String userId;
+	
+	SimpleSocialUserDetails(String userId){
+		this.userId = userId;
+	}
+	
 	@Override
 	public String getUserId(){
-		return "jinga4x";
+		return userId;
 	}
 
 	@Override

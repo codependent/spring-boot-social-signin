@@ -45,7 +45,7 @@ class SecurityConfig extends WebSecurityConfigurerAdapter{
 		return new SocialUserDetailsService(){
 			@Override
 			public SocialUserDetails loadUserByUserId(String userId) throws UsernameNotFoundException{
-				return new SimpleSocialUserDetails();
+				return new SimpleSocialUserDetails(userId);
 			}
 		}
 	}
