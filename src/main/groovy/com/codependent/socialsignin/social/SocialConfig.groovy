@@ -18,7 +18,7 @@ import org.springframework.social.connect.mem.InMemoryUsersConnectionRepository
 import org.springframework.social.facebook.api.Facebook
 import org.springframework.social.facebook.api.User
 import org.springframework.social.facebook.connect.FacebookConnectionFactory
-import org.springframework.social.google.api.Google;
+import org.springframework.social.google.api.Google
 import org.springframework.social.google.connect.GoogleConnectionFactory
 import org.springframework.social.security.AuthenticationNameUserIdSource
 
@@ -57,10 +57,18 @@ class SocialConfig extends SocialConfigurerAdapter{
 		InMemoryUsersConnectionRepository rep = new InMemoryUsersConnectionRepository(connectionFactoryLocator)
 		rep.setConnectionSignUp(new ConnectionSignUp(){
 			public String execute(Connection<?> connection){
-				Facebook facebook = (Facebook)connection.getApi();
-				String [] fields = [ "id", "email",  "first_name", "last_name", "about" , "gender" ];
-				User userProfile = facebook.fetchObject(connection.getKey().getProviderUserId(), User.class, fields);
-				return userProfile.getEmail();
+				if(connection.getApi() instanceof Facebook){
+					Facebook facebook = (Facebook)connection.getApi();
+					String [] fields = [ "id", "email",  "first_name", "last_name", "about" , "gender" ];
+					User userProfile = facebook.fetchObject(connection.getKey().getProviderUserId(), User.class, fields);
+					return userProfile.getEmail();
+				}else if(connection.getApi() instanceof Google){
+					Google google = (Google)connection.getApi()
+					Set<String> mails = google.plusOperations().getGoogleProfile().getEmailAddresses()
+					return mails.iterator().next()
+				}else{
+					throw new UnsupportedOperationException("connection no soportado: " + connection)
+				}
 			}
 		})
 		return rep;
