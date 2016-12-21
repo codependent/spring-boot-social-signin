@@ -31,8 +31,7 @@ class SimpleSocialUserDetails implements SocialUserDetails{
 
 	@Override
 	public String getUsername() {
-		// TODO Auto-generated method stub
-		return null;
+		return userId;
 	}
 
 	@Override
