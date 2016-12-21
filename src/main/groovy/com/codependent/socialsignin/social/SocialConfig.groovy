@@ -18,6 +18,8 @@ import org.springframework.social.connect.mem.InMemoryUsersConnectionRepository
 import org.springframework.social.facebook.api.Facebook
 import org.springframework.social.facebook.api.User
 import org.springframework.social.facebook.connect.FacebookConnectionFactory
+import org.springframework.social.google.api.Google;
+import org.springframework.social.google.connect.GoogleConnectionFactory
 import org.springframework.social.security.AuthenticationNameUserIdSource
 
 @Configuration
@@ -26,15 +28,26 @@ class SocialConfig extends SocialConfigurerAdapter{
 
 	@Override
 	void addConnectionFactories(ConnectionFactoryConfigurer cfConfig, Environment env) {
-		FacebookConnectionFactory fcf = new FacebookConnectionFactory(env.getProperty("facebook.clientId"), env.getProperty("facebook.clientSecret"));
-		fcf.setScope("public_profile,email");
-		cfConfig.addConnectionFactory(fcf);
+		FacebookConnectionFactory fcf = new FacebookConnectionFactory(env.getProperty("facebook.clientId"), env.getProperty("facebook.clientSecret"))
+		fcf.setScope("public_profile,email")
+		cfConfig.addConnectionFactory(fcf)
+		
+		GoogleConnectionFactory gcf = new GoogleConnectionFactory(env.getProperty("google.clientId"), env.getProperty("google.clientSecret"))
+		gcf.setScope("openid https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo#email https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/tasks https://www-opensocial.googleusercontent.com/api/people https://www.googleapis.com/auth/plus.login");
+		cfConfig.addConnectionFactory(gcf);
 	}
 	
 	@Bean
 	@Scope(value="request", proxyMode=ScopedProxyMode.INTERFACES)
 	Facebook facebook(ConnectionRepository repository) {
 		Connection<Facebook> connection = repository.findPrimaryConnection(Facebook.class);
+		return connection != null ? connection.getApi() : null;
+	}
+	
+	@Bean
+	@Scope(value="request", proxyMode=ScopedProxyMode.INTERFACES)
+	Google google(ConnectionRepository repository) {
+		Connection<Google> connection = repository.findPrimaryConnection(Google.class);
 		return connection != null ? connection.getApi() : null;
 	}
 	
