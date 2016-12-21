@@ -29,49 +29,49 @@ class SocialConfig extends SocialConfigurerAdapter{
 	@Override
 	void addConnectionFactories(ConnectionFactoryConfigurer cfConfig, Environment env) {
 		FacebookConnectionFactory fcf = new FacebookConnectionFactory(env.getProperty("facebook.clientId"), env.getProperty("facebook.clientSecret"))
-		fcf.setScope("public_profile,email")
-		cfConfig.addConnectionFactory(fcf)
+		fcf.scope = "public_profile,email"
+		cfConfig.addConnectionFactory fcf
 		
 		GoogleConnectionFactory gcf = new GoogleConnectionFactory(env.getProperty("google.clientId"), env.getProperty("google.clientSecret"))
-		gcf.setScope("openid profile email https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo#email https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/tasks https://www-opensocial.googleusercontent.com/api/people https://www.googleapis.com/auth/plus.login");
-		cfConfig.addConnectionFactory(gcf);
+		gcf.scope = "openid profile email https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo#email https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/tasks https://www-opensocial.googleusercontent.com/api/people https://www.googleapis.com/auth/plus.login"
+		cfConfig.addConnectionFactory gcf
 	}
 	
 	@Bean
 	@Scope(value="request", proxyMode=ScopedProxyMode.INTERFACES)
 	Facebook facebook(ConnectionRepository repository) {
-		Connection<Facebook> connection = repository.findPrimaryConnection(Facebook.class);
-		return connection != null ? connection.getApi() : null;
+		Connection<Facebook> connection = repository.findPrimaryConnection Facebook.class
+		return connection != null ? connection.api : null
 	}
 	
 	@Bean
 	@Scope(value="request", proxyMode=ScopedProxyMode.INTERFACES)
 	Google google(ConnectionRepository repository) {
-		Connection<Google> connection = repository.findPrimaryConnection(Google.class);
-		return connection != null ? connection.getApi() : null;
+		Connection<Google> connection = repository.findPrimaryConnection Google.class
+		return connection != null ? connection.api : null
 	}
 	
 	@Override
 	UsersConnectionRepository getUsersConnectionRepository(ConnectionFactoryLocator connectionFactoryLocator) {
-		//return new JdbcUsersConnectionRepository(dataSource, connectionFactoryLocator, Encryptors.noOpText());
+		//return new JdbcUsersConnectionRepository(dataSource, connectionFactoryLocator, Encryptors.noOpText())
 		InMemoryUsersConnectionRepository rep = new InMemoryUsersConnectionRepository(connectionFactoryLocator)
-		rep.setConnectionSignUp(new ConnectionSignUp(){
+		rep.connectionSignUp = new ConnectionSignUp(){
 			public String execute(Connection<?> connection){
-				if(connection.getApi() instanceof Facebook){
-					Facebook facebook = (Facebook)connection.getApi();
-					String [] fields = [ "id", "email",  "first_name", "last_name", "about" , "gender" ];
-					User userProfile = facebook.fetchObject(connection.getKey().getProviderUserId(), User.class, fields);
-					return userProfile.getEmail();
-				}else if(connection.getApi() instanceof Google){
-					Google google = (Google)connection.getApi()
-					Set<String> mails = google.plusOperations().getGoogleProfile().getEmailAddresses()
+				if(connection.api instanceof Facebook){
+					Facebook facebook = (Facebook)connection.api
+					String [] fields = [ "id", "email",  "first_name", "last_name", "about" , "gender" ]
+					User userProfile = facebook.fetchObject connection.key.providerUserId, User.class, fields
+					return userProfile.email
+				}else if(connection.api instanceof Google){
+					Google google = (Google)connection.api
+					Set<String> mails = google.plusOperations().googleProfile.emailAddresses
 					return mails.iterator().next()
 				}else{
 					throw new UnsupportedOperationException("connection no soportado: " + connection)
 				}
 			}
-		})
-		return rep;
+		}
+		return rep
 	}
 	
 	@Override

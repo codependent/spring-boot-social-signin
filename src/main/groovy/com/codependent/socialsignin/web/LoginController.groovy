@@ -12,7 +12,7 @@ class LoginController {
 	
 	@GetMapping("/login")
 	def home(){
-		return "login"
+		"login"
 	}
 	
 }

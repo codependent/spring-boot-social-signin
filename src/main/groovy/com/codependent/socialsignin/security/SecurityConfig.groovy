@@ -24,8 +24,8 @@ class SecurityConfig extends WebSecurityConfigurerAdapter{
 	protected void configure(HttpSecurity http) throws Exception {
 		
 		SpringSocialConfigurer ssc = new SpringSocialConfigurer()
-		ssc.alwaysUsePostLoginUrl(true)
-		ssc.postLoginUrl("/secure-home")
+		ssc.alwaysUsePostLoginUrl true
+		ssc.postLoginUrl "/secure-home"
 		
 		http
 			.authorizeRequests()
@@ -43,7 +43,7 @@ class SecurityConfig extends WebSecurityConfigurerAdapter{
 				.and()
 			/*.rememberMe()
 				.and()*/
-			.apply(ssc);
+			.apply(ssc)
 	}
 	
 	@Bean
@@ -51,7 +51,7 @@ class SecurityConfig extends WebSecurityConfigurerAdapter{
 		return new SocialUserDetailsService(){
 			@Override
 			public SocialUserDetails loadUserByUserId(String userId) throws UsernameNotFoundException{
-				return new SimpleSocialUserDetails(userId);
+				return new SimpleSocialUserDetails(userId)
 			}
 		}
 	}
