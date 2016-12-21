@@ -22,12 +22,18 @@ class SecurityConfig extends WebSecurityConfigurerAdapter{
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
+		
+		SpringSocialConfigurer ssc = new SpringSocialConfigurer()
+		ssc.alwaysUsePostLoginUrl(true)
+		ssc.postLoginUrl("/secure-home")
+		
 		http
 			.authorizeRequests()
 				.antMatchers("/secure*").authenticated()
 				.and()
 			.formLogin()
 				.loginPage("/login").permitAll()
+				.defaultSuccessUrl("/secure-home")
 				//.loginProcessingUrl("/secure-home")
 				.failureUrl("/login?param.error=bad_credentials")
 				.and()
@@ -37,7 +43,7 @@ class SecurityConfig extends WebSecurityConfigurerAdapter{
 				.and()
 			/*.rememberMe()
 				.and()*/
-			.apply(new SpringSocialConfigurer());
+			.apply(ssc);
 	}
 	
 	@Bean

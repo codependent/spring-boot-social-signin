@@ -33,7 +33,7 @@ class SocialConfig extends SocialConfigurerAdapter{
 		cfConfig.addConnectionFactory(fcf)
 		
 		GoogleConnectionFactory gcf = new GoogleConnectionFactory(env.getProperty("google.clientId"), env.getProperty("google.clientSecret"))
-		gcf.setScope("openid https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo#email https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/tasks https://www-opensocial.googleusercontent.com/api/people https://www.googleapis.com/auth/plus.login");
+		gcf.setScope("openid profile email https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo#email https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/tasks https://www-opensocial.googleusercontent.com/api/people https://www.googleapis.com/auth/plus.login");
 		cfConfig.addConnectionFactory(gcf);
 	}
 	
