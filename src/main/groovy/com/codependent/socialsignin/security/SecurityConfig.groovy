@@ -1,17 +1,16 @@
 package com.codependent.socialsignin.security
 
 
+import javax.sql.DataSource
+
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Scope
-import org.springframework.context.annotation.ScopedProxyMode
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.core.userdetails.UsernameNotFoundException
-import org.springframework.social.connect.ConnectionFactoryLocator
-import org.springframework.social.connect.UsersConnectionRepository
-import org.springframework.social.connect.mem.InMemoryUsersConnectionRepository
-import org.springframework.social.security.SocialUser;
+import org.springframework.social.security.SocialUser
 import org.springframework.social.security.SocialUserDetails
 import org.springframework.social.security.SocialUserDetailsService
 import org.springframework.social.security.SpringSocialConfigurer
@@ -19,6 +18,18 @@ import org.springframework.social.security.SpringSocialConfigurer
 @EnableWebSecurity
 class SecurityConfig extends WebSecurityConfigurerAdapter{
 
+	@Autowired
+	private DataSource dataSource
+	
+	@Autowired
+	void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+		auth
+			.jdbcAuthentication()
+				.dataSource(dataSource)
+				.withDefaultSchema()
+				.withUser("joseantonio.inigo@gmail.com").password("mypassword").roles("USER");
+	}
+	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		
@@ -36,12 +47,12 @@ class SecurityConfig extends WebSecurityConfigurerAdapter{
 				//.loginProcessingUrl("/secure-home")
 				.failureUrl("/login?param.error=bad_credentials")
 				.and()
+			.rememberMe().key("rememberMeKey")
+				.and()
 			.logout()
 				.logoutUrl("/logout")
 				.deleteCookies("JSESSIONID")
 				.and()
-			/*.rememberMe()
-				.and()*/
 			.apply(ssc)
 	}
 	
