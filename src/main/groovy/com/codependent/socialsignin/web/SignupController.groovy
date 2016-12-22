@@ -26,8 +26,8 @@ class SignupController {
 		if(attemp != null){
 			//Social signup
 			Connection<?> conn = attemp.getConnection(connectionFactoryLocator)
-			if (connection != null) {
-				UserProfile userProfile = connection.fetchUserProfile()
+			if (conn != null) {
+				UserProfile userProfile = conn.fetchUserProfile()
 				println userProfile
 			} else {
 				//TODO  Normal signup - no social sign in
