@@ -95,7 +95,7 @@ class SocialConfig extends SocialConfigurerAdapter{
 				}else{
 					throw new UnsupportedOperationException("connection no soportado: " + connection)
 				}
-				verifyExistingUser(email)
+				verifyExistingUser email
 				email
 			}
 		}
@@ -116,20 +116,20 @@ class SocialConfig extends SocialConfigurerAdapter{
 		List<UserDetails> user = jdbcTemplate.query(JdbcDaoImpl.DEF_USERS_BY_USERNAME_QUERY,
 			new RowMapper<UserDetails>() {
 				public UserDetails mapRow(ResultSet rs, int rowNum) throws SQLException {
-					String username = rs.getString(1);
-					String password = rs.getString(2);
-					boolean enabled = rs.getBoolean(3);
+					String username = rs.getString 1
+					String password = rs.getString 2 
+					boolean enabled = rs.getBoolean 3
 					new org.springframework.security.core.userdetails.User(username, password, AuthorityUtils.NO_AUTHORITIES)
 				}
 		}, id)
 		if(user.isEmpty()){
 			//User not registered in the application. Manual sign up
 			String password = new BigInteger(130, random).toString 32
-			logger.info 'user not registered - manual sign up - user[{}], password[{}], roles[{}]', id, password, 'USER'
+			logger.info 'User not registered - manual sign up - user[{}], password[{}], roles[{}]', id, password, 'USER'
 			jdbcTemplate.update('insert into users(username,password,enabled) values(?,?,?)', id, password, true)
 			jdbcTemplate.update('insert into authorities(username,authority) values(?,?)', id, 'USER')
 		}else{
-			logger.info 'user already registered in application'
+			logger.info 'User already registered in application'
 		}
 	}
 	
