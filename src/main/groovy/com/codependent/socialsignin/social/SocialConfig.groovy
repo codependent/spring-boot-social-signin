@@ -1,10 +1,24 @@
 package com.codependent.socialsignin.social
 
+import java.security.SecureRandom
+import java.sql.ResultSet
+import java.sql.SQLException
+
+import javax.sql.DataSource
+
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Scope
 import org.springframework.context.annotation.ScopedProxyMode
 import org.springframework.core.env.Environment
+import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.RowMapper
+import org.springframework.security.core.authority.AuthorityUtils
+import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.core.userdetails.jdbc.JdbcDaoImpl
 import org.springframework.social.UserIdSource
 import org.springframework.social.config.annotation.ConnectionFactoryConfigurer
 import org.springframework.social.config.annotation.EnableSocial
@@ -27,6 +41,16 @@ import org.springframework.social.security.AuthenticationNameUserIdSource
 @EnableSocial
 class SocialConfig extends SocialConfigurerAdapter{
 
+	private Logger logger = LoggerFactory.getLogger(getClass())
+	
+	private SecureRandom random = new SecureRandom()
+	
+	@Autowired
+	private DataSource dataSource
+	
+	@Autowired
+	private JdbcTemplate jdbcTemplate
+	
 	@Override
 	void addConnectionFactories(ConnectionFactoryConfigurer cfConfig, Environment env) {
 		FacebookConnectionFactory fcf = new FacebookConnectionFactory(env.getProperty("facebook.clientId"), env.getProperty("facebook.clientSecret"))
@@ -54,22 +78,25 @@ class SocialConfig extends SocialConfigurerAdapter{
 	
 	@Override
 	UsersConnectionRepository getUsersConnectionRepository(ConnectionFactoryLocator connectionFactoryLocator) {
-		//return new JdbcUsersConnectionRepository(dataSource, connectionFactoryLocator, Encryptors.noOpText())
-		InMemoryUsersConnectionRepository rep = new InMemoryUsersConnectionRepository(connectionFactoryLocator)
+		//UsersConnectionRepository rep = new JdbcUsersConnectionRepository(dataSource, connectionFactoryLocator, Encryptors.noOpText())
+		UsersConnectionRepository rep = new InMemoryUsersConnectionRepository(connectionFactoryLocator)
 		rep.connectionSignUp = new ConnectionSignUp(){
 			String execute(Connection<?> connection){
+				def email
 				if(connection.api instanceof Facebook){
 					Facebook facebook = (Facebook)connection.api
 					String [] fields = [ "id", "email",  "first_name", "last_name", "about" , "gender" ]
 					User userProfile = facebook.fetchObject connection.key.providerUserId, User.class, fields
-					return userProfile.email
+					email = userProfile.email
 				}else if(connection.api instanceof Google){
 					Google google = (Google)connection.api
 					Person userProfile = google.plusOperations().googleProfile
-					return userProfile.emailAddresses.iterator().next()
+					email = userProfile.emailAddresses.iterator().next()
 				}else{
 					throw new UnsupportedOperationException("connection no soportado: " + connection)
 				}
+				verifyExistingUser(email)
+				email
 			}
 		}
 		rep
@@ -78,6 +105,32 @@ class SocialConfig extends SocialConfigurerAdapter{
 	@Override
 	UserIdSource getUserIdSource() {
 		return new AuthenticationNameUserIdSource()
+	}
+
+	/**
+	 * Checks wether the user is already registered in the user table. If not it creates it with a temporal random password and USER role
+	 * @author JINGA4X
+	 *
+	 */
+	private void verifyExistingUser(String id){
+		List<UserDetails> user = jdbcTemplate.query(JdbcDaoImpl.DEF_USERS_BY_USERNAME_QUERY,
+			new RowMapper<UserDetails>() {
+				public UserDetails mapRow(ResultSet rs, int rowNum) throws SQLException {
+					String username = rs.getString(1);
+					String password = rs.getString(2);
+					boolean enabled = rs.getBoolean(3);
+					new org.springframework.security.core.userdetails.User(username, password, AuthorityUtils.NO_AUTHORITIES)
+				}
+		}, id)
+		if(user.isEmpty()){
+			//User not registered in the application. Manual sign up
+			String password = new BigInteger(130, random).toString 32
+			logger.info 'user not registered - manual sign up - user[{}], password[{}], roles[{}]', id, password, 'USER'
+			jdbcTemplate.update('insert into users(username,password,enabled) values(?,?,?)', id, password, true)
+			jdbcTemplate.update('insert into authorities(username,authority) values(?,?)', id, 'USER')
+		}else{
+			logger.info 'user already registered in application'
+		}
 	}
 	
 }

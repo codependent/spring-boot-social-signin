@@ -13,16 +13,16 @@ class HomeController {
 
 	Logger logger = LoggerFactory.getLogger(this.getClass())
 	
-	@GetMapping( value = ["/" , "/home"] )
+	@GetMapping( value = ['/' , '/home'] )
 	def home(){
-		logger.info "home hola"
-		"home"
+		logger.info '/home'
+		'home'
 	}
 	
-	@GetMapping("/secure-home")
+	@GetMapping('/secure-home')
 	void secureHome(Principal principal){
-		logger.info "/secure-home -> securityContextHolder authentication[{}]", SecurityContextHolder.context.authentication.name
-		logger.info "/secure-home -> principal[{}]", principal.name
+		logger.info '/secure-home -> securityContextHolder authentication[{}]', SecurityContextHolder.context.authentication.name
+		logger.info '/secure-home -> principal[{}]', principal.name
 	}
 	
 }

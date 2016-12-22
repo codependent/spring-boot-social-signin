@@ -9,6 +9,8 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.social.security.SocialUser
 import org.springframework.social.security.SocialUserDetails
@@ -58,10 +60,12 @@ class SecurityConfig extends WebSecurityConfigurerAdapter{
 	
 	@Bean
 	public SocialUserDetailsService socialUserDetailsService(){
+		UserDetailsService userDetailsService = userDetailsService()
 		return new SocialUserDetailsService(){
 			@Override
-			public SocialUserDetails loadUserByUserId(String userId) throws UsernameNotFoundException{
-				new SocialUser(userId, "HIDDEN", [])
+			SocialUserDetails loadUserByUserId(String userId) throws UsernameNotFoundException{
+				UserDetails userDetails = userDetailsService.loadUserByUsername userId
+				new SocialUser(userDetails.getUsername(), userDetails.getPassword(), userDetails.getAuthorities())
 			}
 		}
 	}
