@@ -25,7 +25,7 @@ class SignupController {
 		ProviderSignInAttempt attemp = (ProviderSignInAttempt)session.getAttribute('org.springframework.social.connect.web.ProviderSignInAttempt')
 		if(attemp != null){
 			//Social signup
-			Connection<?> connection = providerSignInUtils.getConnection(request);
+			Connection<?> conn = attemp.getConnection(connectionFactoryLocator)
 			if (connection != null) {
 				UserProfile userProfile = connection.fetchUserProfile()
 				println userProfile
