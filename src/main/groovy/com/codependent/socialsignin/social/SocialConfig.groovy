@@ -9,6 +9,7 @@ import javax.sql.DataSource
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Scope
@@ -45,6 +46,9 @@ class SocialConfig extends SocialConfigurerAdapter{
 	
 	private SecureRandom random = new SecureRandom()
 	
+	@Value('${implicitSingup:true}')
+	private boolean implicitSignup
+	
 	@Autowired
 	private DataSource dataSource
 	
@@ -80,23 +84,25 @@ class SocialConfig extends SocialConfigurerAdapter{
 	UsersConnectionRepository getUsersConnectionRepository(ConnectionFactoryLocator connectionFactoryLocator) {
 		//UsersConnectionRepository rep = new JdbcUsersConnectionRepository(dataSource, connectionFactoryLocator, Encryptors.noOpText())
 		UsersConnectionRepository rep = new InMemoryUsersConnectionRepository(connectionFactoryLocator)
-		rep.connectionSignUp = new ConnectionSignUp(){
-			String execute(Connection<?> connection){
-				def email
-				if(connection.api instanceof Facebook){
-					Facebook facebook = (Facebook)connection.api
-					String [] fields = [ "id", "email",  "first_name", "last_name", "about" , "gender" ]
-					User userProfile = facebook.fetchObject connection.key.providerUserId, User.class, fields
-					email = userProfile.email
-				}else if(connection.api instanceof Google){
-					Google google = (Google)connection.api
-					Person userProfile = google.plusOperations().googleProfile
-					email = userProfile.emailAddresses.iterator().next()
-				}else{
-					throw new UnsupportedOperationException("connection no soportado: " + connection)
+		if(implicitSignup){
+			rep.connectionSignUp = new ConnectionSignUp(){
+				String execute(Connection<?> connection){
+					def email
+					if(connection.api instanceof Facebook){
+						Facebook facebook = (Facebook)connection.api
+						String [] fields = [ "id", "email",  "first_name", "last_name", "about" , "gender" ]
+						User userProfile = facebook.fetchObject connection.key.providerUserId, User.class, fields
+						email = userProfile.email
+					}else if(connection.api instanceof Google){
+						Google google = (Google)connection.api
+						Person userProfile = google.plusOperations().googleProfile
+						email = userProfile.emailAddresses.iterator().next()
+					}else{
+						throw new UnsupportedOperationException("connection no soportado: " + connection)
+					}
+					verifyExistingUser email
+					email
 				}
-				verifyExistingUser email
-				email
 			}
 		}
 		rep
