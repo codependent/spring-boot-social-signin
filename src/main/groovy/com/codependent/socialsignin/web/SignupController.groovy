@@ -65,17 +65,17 @@ class SignupController {
 					}
 					'redirect:/secure-home'
 				}catch(UsernameNotFoundException ex){
-					//TODO Unregistered user - normal signup with prepopulated fields
+					//Unregistered user - normal signup with prepopulated fields
 					model.put 'signupInfo', new SignupInfo( username: userProfile.email, password : '', repeatedPassword: '')
 					'signup'
 				}
 			} else {
-				//TODO  Normal signup - no social sign in
-			
+				//Normal signup - no social sign in
+				model.put 'signupInfo', new SignupInfo()
 				'signup'
 			}
 		}else{
-			//TODO Normal signup - no social sign in
+			//Normal signup - no social sign in
 			model.put 'signupInfo', new SignupInfo()
 			'signup'
 		}
