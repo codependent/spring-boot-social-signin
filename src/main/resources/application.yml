@@ -1,4 +1,6 @@
 spring:
+  datasource:
+    schema: classpath:/org/springframework/social/connect/jdbc/JdbcUsersConnectionRepository.sql 
   thymeleaf:
     cache: false
 

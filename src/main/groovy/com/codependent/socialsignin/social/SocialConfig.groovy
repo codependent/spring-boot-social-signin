@@ -20,6 +20,7 @@ import org.springframework.jdbc.core.RowMapper
 import org.springframework.security.core.authority.AuthorityUtils
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.jdbc.JdbcDaoImpl
+import org.springframework.security.crypto.encrypt.Encryptors
 import org.springframework.social.UserIdSource
 import org.springframework.social.config.annotation.ConnectionFactoryConfigurer
 import org.springframework.social.config.annotation.EnableSocial
@@ -29,7 +30,7 @@ import org.springframework.social.connect.ConnectionFactoryLocator
 import org.springframework.social.connect.ConnectionRepository
 import org.springframework.social.connect.ConnectionSignUp
 import org.springframework.social.connect.UsersConnectionRepository
-import org.springframework.social.connect.mem.InMemoryUsersConnectionRepository
+import org.springframework.social.connect.jdbc.JdbcUsersConnectionRepository
 import org.springframework.social.facebook.api.Facebook
 import org.springframework.social.facebook.api.User
 import org.springframework.social.facebook.connect.FacebookConnectionFactory
@@ -82,8 +83,8 @@ class SocialConfig extends SocialConfigurerAdapter{
 	
 	@Override
 	UsersConnectionRepository getUsersConnectionRepository(ConnectionFactoryLocator connectionFactoryLocator) {
-		//UsersConnectionRepository rep = new JdbcUsersConnectionRepository(dataSource, connectionFactoryLocator, Encryptors.noOpText())
-		UsersConnectionRepository rep = new InMemoryUsersConnectionRepository(connectionFactoryLocator)
+		UsersConnectionRepository rep = new JdbcUsersConnectionRepository(dataSource, connectionFactoryLocator, Encryptors.noOpText())
+		//UsersConnectionRepository rep = new InMemoryUsersConnectionRepository(connectionFactoryLocator)
 		if(implicitSignup){
 			rep.connectionSignUp = new ConnectionSignUp(){
 				String execute(Connection<?> connection){
