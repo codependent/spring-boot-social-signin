@@ -47,7 +47,7 @@ class SocialConfig extends SocialConfigurerAdapter{
 	
 	private SecureRandom random = new SecureRandom()
 	
-	@Value('${implicitSingup:true}')
+	@Value('${spring.security.social.implicit-singup:true}')
 	private boolean implicitSignup
 	
 	@Autowired

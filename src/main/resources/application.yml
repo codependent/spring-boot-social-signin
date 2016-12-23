@@ -1,6 +1,9 @@
 spring:
   datasource:
-    schema: classpath:/org/springframework/social/connect/jdbc/JdbcUsersConnectionRepository.sql 
+    schema: classpath:/org/springframework/social/connect/jdbc/JdbcUsersConnectionRepository.sql
+  security:
+    social: 
+      implicit-singup: false 
   thymeleaf:
     cache: false
 
@@ -18,4 +21,3 @@ logging:
       security: DEBUG
       social: DEBUG
       
-implicitSingup: false
