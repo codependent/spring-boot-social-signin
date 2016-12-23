@@ -6,6 +6,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.social.connect.Connection
 import org.springframework.social.connect.ConnectionFactoryLocator
 import org.springframework.social.connect.ConnectionRepository
@@ -45,10 +46,15 @@ class SignupController {
 				//Authentication and redirect to private home page
 				//SocialUserDetails userDetails = socialUserDetailsService.loadUserByUserId(conn.getKey().key.providerUserId)
 				println conn.key.providerUserId
-				SocialUserDetails userDetails = socialUserDetailsService.loadUserByUserId(userProfile.email)
-				SocialAuthenticationToken authentication = new SocialAuthenticationToken(conn, userDetails, [:], userDetails.getAuthorities())
-				SecurityContextHolder.getContext().setAuthentication(authentication);
-				'redirect:/secure-home'
+				try{
+					SocialUserDetails userDetails = socialUserDetailsService.loadUserByUserId(userProfile.email)
+					SocialAuthenticationToken authentication = new SocialAuthenticationToken(conn, userDetails, [:], userDetails.getAuthorities())
+					SecurityContextHolder.getContext().setAuthentication(authentication);
+					'redirect:/secure-home'
+				}catch(UsernameNotFoundException ex){
+					//TODO Unregistered user - normal signup with prepopulated fields
+					'signup'
+				}
 			} else {
 				//TODO  Normal signup - no social sign in
 				'signup'
