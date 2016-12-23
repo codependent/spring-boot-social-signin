@@ -10,13 +10,20 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.social.connect.Connection
 import org.springframework.social.connect.ConnectionFactoryLocator
 import org.springframework.social.connect.ConnectionRepository
+import org.springframework.social.connect.NoSuchConnectionException;
 import org.springframework.social.connect.UserProfile
 import org.springframework.social.connect.web.ProviderSignInAttempt
 import org.springframework.social.security.SocialAuthenticationToken
 import org.springframework.social.security.SocialUserDetails
 import org.springframework.social.security.SocialUserDetailsService
 import org.springframework.stereotype.Controller
+import org.springframework.ui.ModelMap
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping
+
+import com.codependent.socialsignin.repository.UserRepository;
+import com.codependent.socialsignin.web.dto.SignupInfo
 
 @Controller
 class SignupController {
@@ -32,37 +39,53 @@ class SignupController {
 	@Autowired
 	SocialUserDetailsService socialUserDetailsService;
 	
+	@Autowired
+	UserRepository userRepository
+	
 	@GetMapping("/signup")
-	def signupForm(HttpSession session){
+	def signupForm(ModelMap model, HttpSession session){
 		ProviderSignInAttempt attemp = (ProviderSignInAttempt)session.getAttribute('org.springframework.social.connect.web.ProviderSignInAttempt')
 		if(attemp != null){
 			//Social signup
 			Connection<?> conn = attemp.getConnection(connectionFactoryLocator)
 			if (conn != null) {
-				//Automatic Account association
 				UserProfile userProfile = conn.fetchUserProfile()
-				connectionRepository.addConnection(conn);
-				
-				//Authentication and redirect to private home page
-				//SocialUserDetails userDetails = socialUserDetailsService.loadUserByUserId(conn.getKey().key.providerUserId)
-				println conn.key.providerUserId
 				try{
-					SocialUserDetails userDetails = socialUserDetailsService.loadUserByUserId(userProfile.email)
+					//Authentication and redirect to private home page
+					SocialUserDetails userDetails = socialUserDetailsService.loadUserByUserId userProfile.email
 					SocialAuthenticationToken authentication = new SocialAuthenticationToken(conn, userDetails, [:], userDetails.getAuthorities())
 					SecurityContextHolder.getContext().setAuthentication(authentication);
+					try{
+						//Account association
+						connectionRepository.getConnection(conn.key)
+						println 'here'
+					}catch(NoSuchConnectionException ex){
+						println 'here2'
+						connectionRepository.addConnection(conn)
+					}
 					'redirect:/secure-home'
 				}catch(UsernameNotFoundException ex){
 					//TODO Unregistered user - normal signup with prepopulated fields
+					model.put 'signupInfo', new SignupInfo( username: userProfile.email, password : '', repeatedPassword: '')
 					'signup'
 				}
 			} else {
 				//TODO  Normal signup - no social sign in
+			
 				'signup'
 			}
 		}else{
 			//TODO Normal signup - no social sign in
+			model.put 'signupInfo', new SignupInfo()
 			'signup'
 		}
+	}
+	
+	@PostMapping('/signup')
+	def signupFormPost(@ModelAttribute SignupInfo signupInfo){
+		logger.info 'signupFormPost [{}]', signupInfo
+		userRepository.createUser signupInfo.username, signupInfo.password, ['USER']
+		'login'
 	}
 	
 }

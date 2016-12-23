@@ -39,6 +39,8 @@ import org.springframework.social.google.api.plus.Person
 import org.springframework.social.google.connect.GoogleConnectionFactory
 import org.springframework.social.security.AuthenticationNameUserIdSource
 
+import com.codependent.socialsignin.repository.UserRepository;
+
 @Configuration
 @EnableSocial
 class SocialConfig extends SocialConfigurerAdapter{
@@ -55,6 +57,9 @@ class SocialConfig extends SocialConfigurerAdapter{
 	
 	@Autowired
 	private JdbcTemplate jdbcTemplate
+	
+	@Autowired
+	private UserRepository userRepository
 	
 	@Override
 	void addConnectionFactories(ConnectionFactoryConfigurer cfConfig, Environment env) {
@@ -133,8 +138,7 @@ class SocialConfig extends SocialConfigurerAdapter{
 			//User not registered in the application. Manual sign up
 			String password = new BigInteger(130, random).toString 32
 			logger.info 'User not registered - manual sign up - user[{}], password[{}], roles[{}]', id, password, 'USER'
-			jdbcTemplate.update('insert into users(username,password,enabled) values(?,?,?)', id, password, true)
-			jdbcTemplate.update('insert into authorities(username,authority) values(?,?)', id, 'USER')
+			userRepository.createUser id, password, ['USER']
 		}else{
 			logger.info 'User already registered in application'
 		}
