@@ -10,19 +10,22 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.social.connect.Connection
 import org.springframework.social.connect.ConnectionFactoryLocator
 import org.springframework.social.connect.ConnectionRepository
-import org.springframework.social.connect.NoSuchConnectionException;
+import org.springframework.social.connect.NoSuchConnectionException
 import org.springframework.social.connect.UserProfile
+import org.springframework.social.connect.UserProfileBuilder
 import org.springframework.social.connect.web.ProviderSignInAttempt
+import org.springframework.social.facebook.api.Facebook
+import org.springframework.social.facebook.api.User
 import org.springframework.social.security.SocialAuthenticationToken
 import org.springframework.social.security.SocialUserDetails
 import org.springframework.social.security.SocialUserDetailsService
 import org.springframework.stereotype.Controller
 import org.springframework.ui.ModelMap
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PostMapping
 
-import com.codependent.socialsignin.repository.UserRepository;
+import com.codependent.socialsignin.repository.UserRepository
 import com.codependent.socialsignin.web.dto.SignupInfo
 
 @Controller
@@ -49,7 +52,17 @@ class SignupController {
 			//Social signup
 			Connection<?> conn = attemp.getConnection(connectionFactoryLocator)
 			if (conn != null) {
-				UserProfile userProfile = conn.fetchUserProfile()
+				UserProfile userProfile = null;
+				if(conn.getApi() instanceof Facebook){
+					//XXX Workaround for Spring Social bug with Facebook API 2.8
+					String [] fields = [ "id", "email",  "first_name", "last_name", "about" , "gender" ]
+					User facebookUser = conn.api.fetchObject conn.key.providerUserId, User.class, fields
+					userProfile= new UserProfileBuilder().setName(facebookUser.getName()).setFirstName(facebookUser.getFirstName())
+														 .setLastName(facebookUser.getLastName())
+														 .setEmail(facebookUser.getEmail()).build()
+				}else{
+					userProfile = conn.fetchUserProfile()
+				}
 				try{
 					//Authentication and redirect to private home page
 					SocialUserDetails userDetails = socialUserDetailsService.loadUserByUserId userProfile.email
